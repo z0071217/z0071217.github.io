@@ -1,0 +1,21 @@
+name: new-issue
+on:
+  workflow_dispatch:
+    inputs:
+      title:  { description: 'Issue 标题', required: true }
+      body:   { description: 'Issue 内容', required: true }
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DIARY_TOKEN }}
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: core.getInput('title'),
+              body: core.getInput('body'),
+              labels: ['diary']
+            });
