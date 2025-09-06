@@ -21,21 +21,22 @@
 <a href="index.html" class="inline-block mt-6 text-cyan-400">← 返回首页</a>
 
 <script>
-const TOKEN = '';   // 后面用代理方式，这里留空
-const REPO  = 'z0071217/z0071217.github.io';
+const REPO = 'z0071217/z0071217.github.io';
 
-async function postIssue({title, body}){
-  const res = await fetch(`https://api.github.com/repos/${REPO}/issues`,{
+async function postIssueProxy({title, body}){
+  // 调用 GitHub Actions API（公开可读，无需令牌）
+  const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/new-issue.yml/dispatches`,{
     method:'POST',
     headers:{
       'Accept':'application/vnd.github+json',
-      'Authorization':'Bearer '+TOKEN,
       'Content-Type':'application/json'
     },
-    body:JSON.stringify({title, body, labels:['diary']})
+    body:JSON.stringify({
+      ref:'main',
+      inputs:{ title, body }
+    })
   });
-  if(!res.ok) throw new Error(await res.text());
-  return res.json();
+  if(res.status !== 204) throw new Error('触发失败');
 }
 
 document.getElementById('form').addEventListener('submit',async e=>{
@@ -49,7 +50,7 @@ document.getElementById('form').addEventListener('submit',async e=>{
   const title = `${when} · ${who}`;
   const body  = `**作者：** ${who}\n**时间：** ${when}\n**内容：**\n${text}${img?'\n![]('+img+')':''}`;
   try{
-    await postIssue({title, body});
+    await postIssueProxy({title, body});
     alert('已发布到云端！');
     location.href = 'index.html';
   }catch(err){ alert('发布失败：'+err); }
@@ -60,5 +61,6 @@ document.getElementById('date').value = new Date().toISOString().slice(0,16);
 </script>
 </body>
 </html>
+
 
 
