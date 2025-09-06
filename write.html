@@ -1,61 +1,45 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <title>写新日记</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pickadate@3.6.4/lib/compressed/themes/default.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pickadate@3.6.4/lib/compressed/themes/default.date.css">
-  <style>body{background:#111;color:#eee;}</style>
+<meta charset="UTF-8">
+<title>写新日记</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{background:#111;color:#eee;font-family:monospace}</style>
 </head>
-<body class="p-4 font-mono">
-  <h1 class="text-2xl mb-4 neon-text">写 新 日 记</h1>
-  <form id="form" class="space-y-4 max-w-xl">
-    <div>
-      <label>日期</label>
-      <input id="date" type="text" class="bg-gray-800 w-full p-2 rounded" required>
-    </div>
-    <div>
-      <label>填写者</label>
-      <select id="author" class="bg-gray-800 w-full p-2 rounded">
-        <option>小猫 🐱</option>
-        <option>小狗 🐶</option>
-        <option>小熊 🐻</option>
-      </select>
-    </div>
-    <div>
-      <label>内容</label>
-      <textarea id="text" class="bg-gray-800 w-full p-2 rounded" rows="6" required></textarea>
-    </div>
-    <div>
-      <label>图片 URL（可选）</label>
-      <input id="img" type="url" class="bg-gray-800 w-full p-2 rounded" placeholder="https://i.imgur.com/xxx.png">
-    </div>
-    <button type="submit" class="bg-cyan-600 px-4 py-2 rounded neon">保存</button>
-  </form>
-  <a href="index.html" class="inline-block mt-6 text-cyan-400">← 返回首页</a>
+<body class="p-4">
+<h1 class="text-2xl mb-4">写 新 日 记</h1>
+<form id="form" class="space-y-4 max-w-xl">
+  <input id="date" type="datetime-local" class="bg-gray-800 px-3 py-1 rounded w-full" required>
+  <select id="who" class="bg-gray-800 px-3 py-1 rounded w-full">
+    <option>小猫 🐱</option><option>小狗 🐶</option><option>小熊 🐻</option>
+  </select>
+  <textarea id="text" rows="4" placeholder="内容（支持 Markdown 后期会渲染）" class="bg-gray-800 px-3 py-1 rounded w-full" required></textarea>
+  <input id="img" type="url" placeholder="图片 URL（可选）" class="bg-gray-800 px-3 py-1 rounded w-full">
+  <button type="submit" class="bg-cyan-600 px-4 py-2 rounded">发射 ✨</button>
+</form>
+<a href="index.html" class="inline-block mt-6 text-cyan-400">← 返回首页</a>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pickadate@3.6.4/lib/compressed/picker.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pickadate@3.6.4/lib/compressed/picker.date.js"></script>
-  <script>
-    $('#date').pickadate({ format:'yyyy-mm-dd', max:true });
+<script>
+// 把日记存到浏览器本地
+function load(){ return JSON.parse(localStorage.getItem('diary')||'[]'); }
+function save(arr){ localStorage.setItem('diary',JSON.stringify(arr)); }
 
-    document.getElementById('form').addEventListener('submit',async e=>{
-      e.preventDefault();
-      const entry = {
-        date: document.getElementById('date').value,
-        author: document.getElementById('author').value,
-        text: document.getElementById('text').value,
-        img: document.getElementById('img').value
-      };
-      // 这里简化：弹出 data.json 的 GitHub 在线编辑 URL
-      const encoded = encodeURIComponent(JSON.stringify([entry],null,2));
-      const url = `https://github.com/YOUR_USERNAME/diary/edit/main/data.json`;
-      alert('保存步骤：\n1. 复制下面内容\n2. 粘贴进 data.json 最外层数组里\n3. Commit\n'+JSON.stringify(entry,null,2));
-      window.open(url,'_blank');
-    });
-  </script>
+document.getElementById('form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const entry = {
+    date: document.getElementById('date').value,
+    who: document.getElementById('who').value,
+    text: document.getElementById('text').value,
+    img: document.getElementById('img').value
+  };
+  const arr = load(); arr.push(entry); save(arr);
+  alert('已保存到本地！');
+  location.href = 'index.html';   // 写完后回首页
+});
+
+// 默认填此刻
+document.getElementById('date').value = new Date().toISOString().slice(0,16);
+</script>
 </body>
 </html>
