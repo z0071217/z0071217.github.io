@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>未来日记簿</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pickadate@3.6.4/lib/compressed/themes/default.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pickadate@3.6.4/lib/compressed/themes/default.date.css">
+  <style>
+    body { background:#111; color:#eee; }
+    .neon { box-shadow:0 0 5px #0ff,0 0 10px #0ff; }
+  </style>
+</head>
+<body class="p-4 font-mono">
+  <div id="lock" class="fixed inset-0 bg-black flex items-center justify-center z-50">
+    <div class="bg-gray-900 p-8 rounded neon">
+      <h1 class="text-2xl mb-4">请输入查看密码</h1>
+      <input id="lockInput" type="password" class="bg-gray-800 px-3 py-1 rounded" />
+      <button onclick="unlock()" class="ml-2 bg-cyan-600 px-3 py-1 rounded">进入</button>
+    </div>
+  </div>
+
+  <header class="flex justify-between items-center mb-4">
+    <h1 class="text-3xl neon-text">未来日记簿</h1>
+    <a href="write.html" class="bg-cyan-600 px-3 py-1 rounded neon">写新日记</a>
+  </header>
+
+  <main id="list" class="space-y-4"></main>
+
+  <script>
+    const PASS = '0000';   // 查看密码，可改
+    function unlock() {
+      if (document.getElementById('lockInput').value === PASS) {
+        document.getElementById('lock').style.display='none';
+        sessionStorage.setItem('pass',PASS);
+        load();
+      } else alert('密码错误');
+    }
+    if (sessionStorage.getItem('pass')===PASS) {
+      document.getElementById('lock').style.display='none';
+      load();
+    }
+
+    async function load() {
+      const res = await fetch('data.json');
+      const data = await res.json();
+      data.sort((a,b)=> new Date(b.date) - new Date(a.date));
+      const box = document.getElementById('list');
+      box.innerHTML = '';
+      data.forEach(d=>{
+        const div = document.createElement('div');
+        div.className = 'bg-gray-800 p-4 rounded neon';
+        div.innerHTML = `
+          <div class="text-sm text-cyan-400">${d.date} · ${d.author}</div>
+          <div class="my-2">${d.text.replace(/\n/g,'<br>')}</div>
+          ${d.img ? `<img src="${d.img}" class="max-h-64 rounded" />` : ''}
+        `;
+        box.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
