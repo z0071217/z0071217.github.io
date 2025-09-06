@@ -22,21 +22,21 @@
 
 <script>
 const REPO = 'z0071217/z0071217.github.io';
+const TOKEN = localStorage.getItem('diary_token') || prompt('请输入一次性管理员令牌(ghp_...)：');
+if (!TOKEN) { alert('未提供令牌，无法发布'); location.href = 'index.html'; }
+localStorage.setItem('diary_token', TOKEN); // 仅存在当前浏览器内存
 
 async function postIssueProxy({title, body}){
-  // 调用 GitHub Actions API（公开可读，无需令牌）
   const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/new-issue.yml/dispatches`,{
     method:'POST',
     headers:{
       'Accept':'application/vnd.github+json',
+      'Authorization':'Bearer '+TOKEN,
       'Content-Type':'application/json'
     },
-    body:JSON.stringify({
-      ref:'main',
-      inputs:{ title, body }
-    })
+    body:JSON.stringify({ref:'main',inputs:{title,body}})
   });
-  if(res.status !== 204) throw new Error('触发失败');
+  if(res.status !== 204) throw new Error('触发失败 '+res.status);
 }
 
 document.getElementById('form').addEventListener('submit',async e=>{
@@ -56,11 +56,11 @@ document.getElementById('form').addEventListener('submit',async e=>{
   }catch(err){ alert('发布失败：'+err); }
 });
 
-// 默认填此刻
 document.getElementById('date').value = new Date().toISOString().slice(0,16);
 </script>
 </body>
 </html>
+
 
 
 
