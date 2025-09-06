@@ -29,36 +29,34 @@
   <main id="list" class="space-y-4"></main>
 
   <script>
-    const PASS = '0000';   // 查看密码，可改
-    function unlock() {
-      if (document.getElementById('lockInput').value === PASS) {
-        document.getElementById('lock').style.display='none';
-        sessionStorage.setItem('pass',PASS);
-        load();
-      } else alert('密码错误');
-    }
-    if (sessionStorage.getItem('pass')===PASS) {
-      document.getElementById('lock').style.display='none';
-      load();
-    }
-
-    async function load() {
-      const res = await fetch('data.json');
-      const data = await res.json();
-      data.sort((a,b)=> new Date(b.date) - new Date(a.date));
-      const box = document.getElementById('list');
-      box.innerHTML = '';
-      data.forEach(d=>{
-        const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-4 rounded neon';
-        div.innerHTML = `
-          <div class="text-sm text-cyan-400">${d.date} · ${d.author}</div>
-          <div class="my-2">${d.text.replace(/\n/g,'<br>')}</div>
-          ${d.img ? `<img src="${d.img}" class="max-h-64 rounded" />` : ''}
-        `;
-        box.appendChild(div);
-      });
-    }
-  </script>
+const PASS = '0000';          // 访问密码
+function unlock(){
+  if(document.getElementById('lockInput').value === PASS){
+    document.getElementById('lock').style.display='none';
+    render();
+  }else{ alert('密码错误'); }
+}
+function load(){              // 统一读本地
+  return JSON.parse(localStorage.getItem('diary')||'[]');
+}
+function render(){
+  const arr = load().sort((a,b)=> new Date(b.date) - new Date(a.date));
+  const box = document.getElementById('list');
+  box.innerHTML = '';
+  arr.forEach(d=>{
+    const div = document.createElement('div');
+    div.className = 'bg-gray-800 p-4 rounded neon';
+    div.innerHTML = `
+      <div class="text-sm text-cyan-400">${d.who} · ${d.date.replace('T',' ')}</div>
+      <div class="my-2 whitespace-pre-wrap">${d.text}</div>
+      ${d.img ? `<img src="${d.img}" class="max-h-64 rounded">` : ''}
+    `;
+    box.appendChild(div);
+  });
+}
+// 默认填此刻
+document.getElementById('when').value = new Date().toISOString().slice(0,16);
+</script>
 </body>
+
 </html>
