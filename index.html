@@ -30,17 +30,26 @@
 
 <script>
 const PASS = '0000';
+
+// 1. 如果 URL 带 ?auto=1 且本地有令牌，直接解锁
+if(location.search.includes('auto=1') && localStorage.getItem('diary_token')){
+  document.getElementById('lock').style.display='none';
+  render();
+}
+
 function unlock(){
   if(document.getElementById('lockInput').value === PASS){
     document.getElementById('lock').style.display='none';
     render();
   }else{ alert('密码错误'); }
 }
+
 async function load(){
   const res = await fetch('https://api.github.com/repos/z0071217/z0071217.github.io/issues?labels=diary&state=open&per_page=100');
   if(!res.ok) throw new Error('网络错误');
   return res.json();
 }
+
 async function render(){
   try{
     const issues = await load();
@@ -48,7 +57,7 @@ async function render(){
     box.innerHTML = '';
     issues.forEach(iss=>{
       const [when, who] = iss.title.split(' · ');
-      const body = iss.body
+      const body = (iss.body || '')                      // 空值保护
         .replace(/!\[.*?\]\((.*?)\)/g,'<img src="$1" class="max-h-64 rounded mt-2">')
         .replace(/\n/g,'<br>');
       const div = document.createElement('div');
@@ -65,4 +74,5 @@ async function render(){
 </body>
 
 </html>
+
 
