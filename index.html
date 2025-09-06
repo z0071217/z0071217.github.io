@@ -28,35 +28,41 @@
 
   <main id="list" class="space-y-4"></main>
 
-  <script>
-const PASS = '0000';          // 访问密码
+<script>
+const PASS = '0000';
 function unlock(){
   if(document.getElementById('lockInput').value === PASS){
     document.getElementById('lock').style.display='none';
     render();
   }else{ alert('密码错误'); }
 }
-function load(){              // 统一读本地
-  return JSON.parse(localStorage.getItem('diary')||'[]');
+async function load(){
+  const res = await fetch('https://api.github.com/repos/z0071217/z0071217.github.io/issues?labels=diary&state=open&per_page=100');
+  if(!res.ok) throw new Error('网络错误');
+  return res.json();
 }
-function render(){
-  const arr = load().sort((a,b)=> new Date(b.date) - new Date(a.date));
-  const box = document.getElementById('list');
-  box.innerHTML = '';
-  arr.forEach(d=>{
-    const div = document.createElement('div');
-    div.className = 'bg-gray-800 p-4 rounded neon';
-    div.innerHTML = `
-      <div class="text-sm text-cyan-400">${d.who} · ${d.date.replace('T',' ')}</div>
-      <div class="my-2 whitespace-pre-wrap">${d.text}</div>
-      ${d.img ? `<img src="${d.img}" class="max-h-64 rounded">` : ''}
-    `;
-    box.appendChild(div);
-  });
+async function render(){
+  try{
+    const issues = await load();
+    const box = document.getElementById('list');
+    box.innerHTML = '';
+    issues.forEach(iss=>{
+      const [when, who] = iss.title.split(' · ');
+      const body = iss.body
+        .replace(/!\[.*?\]\((.*?)\)/g,'<img src="$1" class="max-h-64 rounded mt-2">')
+        .replace(/\n/g,'<br>');
+      const div = document.createElement('div');
+      div.className = 'bg-gray-800 p-4 rounded neon mb-4';
+      div.innerHTML = `
+        <div class="text-sm text-cyan-400">${who} · ${when}</div>
+        <div class="my-2 whitespace-pre-wrap">${body}</div>
+      `;
+      box.appendChild(div);
+    });
+  }catch(e){ alert('读取失败：'+e); }
 }
-// 默认填此刻
-document.getElementById('when').value = new Date().toISOString().slice(0,16);
 </script>
 </body>
 
 </html>
+
