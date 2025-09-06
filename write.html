@@ -21,21 +21,38 @@
 <a href="index.html" class="inline-block mt-6 text-cyan-400">← 返回首页</a>
 
 <script>
-// 把日记存到浏览器本地
-function load(){ return JSON.parse(localStorage.getItem('diary')||'[]'); }
-function save(arr){ localStorage.setItem('diary',JSON.stringify(arr)); }
+const TOKEN = '';   // 后面用代理方式，这里留空
+const REPO  = 'z0071217/z0071217.github.io';
 
-document.getElementById('form').addEventListener('submit',e=>{
+async function postIssue({title, body}){
+  const res = await fetch(`https://api.github.com/repos/${REPO}/issues`,{
+    method:'POST',
+    headers:{
+      'Accept':'application/vnd.github+json',
+      'Authorization':'Bearer '+TOKEN,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({title, body, labels:['diary']})
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+document.getElementById('form').addEventListener('submit',async e=>{
   e.preventDefault();
-  const entry = {
-    date: document.getElementById('date').value,
-    who: document.getElementById('who').value,
-    text: document.getElementById('text').value,
-    img: document.getElementById('img').value
-  };
-  const arr = load(); arr.push(entry); save(arr);
-  alert('已保存到本地！');
-  location.href = 'index.html';   // 写完后回首页
+  const who  = document.getElementById('who').value;
+  const when = document.getElementById('date').value;
+  const text = document.getElementById('text').value;
+  const img  = document.getElementById('img').value;
+  if(!who||!when||!text){ alert('请完整填写'); return; }
+
+  const title = `${when} · ${who}`;
+  const body  = `**作者：** ${who}\n**时间：** ${when}\n**内容：**\n${text}${img?'\n![]('+img+')':''}`;
+  try{
+    await postIssue({title, body});
+    alert('已发布到云端！');
+    location.href = 'index.html';
+  }catch(err){ alert('发布失败：'+err); }
 });
 
 // 默认填此刻
@@ -43,4 +60,5 @@ document.getElementById('date').value = new Date().toISOString().slice(0,16);
 </script>
 </body>
 </html>
+
 
